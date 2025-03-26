@@ -1,24 +1,17 @@
 import streamlit as st
 import json
 import os
-import requests
-from groq import Groq
 from pyairtable import Api
-
-# Configuration - use Streamlit secrets
-AIRTABLE_API_KEY = st.secrets["AIRTABLE_API_KEY"]
-AIRTABLE_BASE_ID = st.secrets["AIRTABLE_BASE_ID"]
-AIRTABLE_TABLE_NAME = st.secrets["AIRTABLE_TABLE_NAME"]
-GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+from groq import Groq
 
 # Initialize clients
-airtable = Api(AIRTABLE_API_KEY)
-groq_client = Groq(api_key=GROQ_API_KEY)
+airtable = Api(st.secrets["AIRTABLE_API_KEY"])
+groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 def fetch_campaigns():
     """Fetch all campaigns from Airtable"""
     try:
-        table = airtable.table(AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME)
+        table = airtable.table(st.secrets["AIRTABLE_BASE_ID"], st.secrets["AIRTABLE_TABLE_NAME"])
         records = table.all()
         return [{
             "id": record["id"],
@@ -65,7 +58,7 @@ def get_ai_recommendation(lead, campaigns):
 
 # API Endpoint Handler
 def handle_api_request():
-    if st.experimental_get_query_params().get("api") == "true":
+    if st.query_params.get("api") == "true":
         try:
             # Get raw body from request
             body = st.text_area("", value="", height=1, key="hidden_textarea", label_visibility="collapsed")
@@ -109,7 +102,7 @@ def handle_api_request():
 response, status_code = handle_api_request()
 
 # If this is an API request, show response and stop execution
-if st.experimental_get_query_params().get("api") == "true":
+if st.query_params.get("api") == "true":
     if status_code != 200:
         st.json(response)
         st.stop()
