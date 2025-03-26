@@ -23,15 +23,14 @@ def fetch_campaigns():
         return None
 
 def handle_api_request():
-    """Handle API requests with proper return values"""
-    if st.query_params.get("api") != "true":
-        return None  # Not an API request
-        
+    """Process API requests and return (response, status_code)"""
     try:
-        body = st.text_area("", value="", height=1, key="__api_request__", label_visibility="collapsed")
+        # Get raw POST data from hidden textarea
+        body = st.text_area("", value="", height=1, key="__api_data__", label_visibility="collapsed")
+        
         if not body:
             return {"error": "Empty request body"}, 400
-            
+        
         data = json.loads(body)
         
         if not data or 'lead' not in data:
@@ -43,8 +42,8 @@ def handle_api_request():
         if not campaigns:
             return {"error": "No campaigns available"}, 404
             
-        # Your actual assignment logic here
-        assigned_campaign = campaigns[0]  # Replace with your logic
+        # Your campaign assignment logic here
+        assigned_campaign = campaigns[0]  # Replace with your actual logic
         
         return {
             "status": "success",
@@ -58,18 +57,12 @@ def handle_api_request():
     except Exception as e:
         return {"error": str(e)}, 500
 
-# Handle API request
-api_response = handle_api_request()
-
-# If API request, show JSON and stop execution
+# Check if this is an API request
 if st.query_params.get("api") == "true":
-    if api_response is None:
-        st.json({"error": "Invalid API request"})
-    else:
-        response, status_code = api_response  # Now safe to unpack
-        st.json(response)
+    response, status_code = handle_api_request()
+    st.json(response)
     st.stop()  # Critical - prevents Streamlit UI from rendering
 
 # Normal Streamlit UI
-st.title("Lead Assignment System")
+st.title("Lead Assignment Dashboard")
 # ... rest of your UI code ...
